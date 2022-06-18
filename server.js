@@ -9,6 +9,11 @@ const app = express();
 
 const readFile = util.promisify(fs.readFile);
 
+const writeFile = (db, notes) =>
+  fs.writeFile(db, JSON.stringify(notes),
+  () => console.info(`Data written to ${db}`)
+  );
+  
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -21,6 +26,23 @@ app.get("/api/notes", (req, res) =>
     .then((data) => 
         res.json(JSON.parse(data))
 ));
+
+//Post request for new notes
+app.post("/api/notes", (req, res) => {
+    const newNote = req.body
+    readFile("./db/db.json")
+    
+    .then((data)=>{
+        newNote.id = Math.random();
+        const noteStored = JSON.parse(data);
+        noteStored.push(newNote)
+        return noteStored
+    })
+    .then((data) => {
+        writeFile("./db/db.json", data)
+        res.json('Note added')
+    })
+});
 
 
 // GET Route for homepage
